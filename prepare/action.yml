@@ -1,0 +1,51 @@
+---
+name: Prepare SQL scripts
+description: Check files for differences with state and prepare them
+
+inputs:
+  snowflake_account:
+    description: 'Target snowflake account'
+  snowflake_database:
+    description: 'Default DB to use in Snowflake'
+  snowflake_user:
+    description: 'Snowflake user to login'
+  snowflake_password:
+    description: 'Snowflake user''s password'
+  snowflake_private_key:
+    description: 'Snowflake user''s private key'
+  snowflake_private_key_passphrase:
+    description: 'Snowflake user''s private key''s passphrase'
+  snowflake_role:
+    description: 'Snowflake role to use (must be admin)'
+  snowflake_warehouse:
+    description: 'Snowflake warehouse to use'
+  scripts_root_dir:
+    description: 'Root folder containing sql scripts to deploy'
+    default: 'scripts'
+  artifact_name:
+    description: 'Name of the artifact to store the prepared scripts'
+    default: 'TO_RUN'
+  target_env:
+    description: 'Name of the target environment. Used to get placeholder values from appropriate file'
+    default: ${{ github.ref_name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare the SQL scripts
+      shell: bash
+      run: ${GITHUB_ACTION_PATH}/../lib/deploy.sh prepare -d ${{ inputs.scripts_root_dir }} -e ${{ inputs.target_env }}
+      env:
+        SNOWSQL_ACCOUNT: ${{ inputs.snowflake_account }}
+        SNOWSQL_DATABASE: ${{ inputs.snowflake_database }}
+        SNOWSQL_USER: ${{ inputs.snowflake_user }}
+        SNOWSQL_PWD: ${{ inputs.snowflake_password }}
+        SNOWSQL_PRIVATE_KEY: ${{ inputs.snowflake_private_key }}
+        SNOWSQL_PRIVATE_KEY_PASSPHRASE: ${{ inputs.snowflake_private_key_passphrase }}
+        SNOWSQL_ROLE: ${{ inputs.snowflake_role }}
+        SNOWSQL_WAREHOUSE: ${{ inputs.snowflake_warehouse }}
+        ARTIFACT_NAME: ${{ inputs.artifact_name }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ inputs.artifact_name }}

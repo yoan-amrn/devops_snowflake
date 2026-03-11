@@ -1,0 +1,100 @@
+---
+name: Draft Release 👷‍♀️️
+run-name: 👷‍♀️ Draft Release (${{ inputs.tag }})
+
+on:
+  # push:
+  #   tags:
+  #     - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'v*.*.*'
+        required: true
+        type: string
+
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TAG: ${{ inputs.tag }}
+
+concurrency:
+  group: ${{ github.workflow }}-changelog
+  cancel-in-progress: true
+
+jobs:
+  update-changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    # Run only on main branch
+    if: github.ref == 'refs/heads/main'
+    # Require admin approval
+    environment: ADMIN
+    # GH permissions
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        run: |
+          pip install typos
+          pip install git-cliff
+          git-cliff --version
+
+      - name: Git fetch tags
+        run: |
+          git fetch --tags
+      #     git tag -l
+
+      - name: Generate CHANGELOG 🦀
+        id: git-cliff-changelog
+        run: |
+          git cliff \
+            --verbose --strip 'footer' -o CHANGELOG.md \
+            --github-repo ${{ github.repository }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --tag ${{ inputs.tag }}
+
+      # - name: Print the CHANGELOG
+      #   run: cat CHANGELOG.md
+
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b release/${{ inputs.tag }}
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog for ${{ inputs.tag }}"
+          git push --set-upstream origin release/${{ inputs.tag }}
+
+      - name: Submit PR
+        run: |
+          gh pr create \
+            --title "chore(release): update changelog for ${{ inputs.tag }}" \
+            --body "Update changelog for ${{ inputs.tag }}" \
+            --base main \
+            --head release/${{ inputs.tag }}
+          gh pr review \
+            --comment -b "PR opened by a 🤖"
+
+      - name: Generate release CHANGELOG 🦀
+        id: git-cliff-release
+        run: |
+          git cliff \
+            -vv --latest --unreleased --strip all -o CHANGES.md \
+            --github-repo ${{ github.repository }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --tag ${{ inputs.tag }}
+
+      - name: Draft Release ${{ inputs.tag }}
+        run: |
+          gh release create ${{ inputs.tag }} \
+            --title "Release ${{ inputs.tag }}" \
+            --notes-file CHANGES.md \
+            --draft

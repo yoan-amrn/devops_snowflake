@@ -1,0 +1,45 @@
+---
+name: tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - DEV
+      - UAT
+      - PROD
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Sanofi-GitHub/snowflake-automate/install-deps@v1
+      - uses: Sanofi-GitHub/snowflake-automate/prepare@v1
+        with:
+          snowflake_account: ${{ vars.SNOWFLAKE_ACCOUNT }}
+          snowflake_database: ${{ vars.SNOWFLAKE_DB }}
+          snowflake_user: ${{ vars.SNOWFLAKE_USER }}
+          snowflake_password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          snowflake_role: ${{ vars.SNOWFLAKE_ROLE }}
+          snowflake_warehouse: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+          scripts_root_dir: tests
+
+  execute:
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Sanofi-GitHub/snowflake-automate/install-deps@v1
+      - uses: Sanofi-GitHub/snowflake-automate/execute@v1
+        with:
+          snowflake_account: ${{ vars.SNOWFLAKE_ACCOUNT }}
+          snowflake_database: ${{ vars.SNOWFLAKE_DB }}
+          snowflake_user: ${{ vars.SNOWFLAKE_USER }}
+          snowflake_password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          snowflake_role: ${{ vars.SNOWFLAKE_ROLE }}
+          snowflake_warehouse: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+

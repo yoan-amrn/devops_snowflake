@@ -1,0 +1,16 @@
+name: Install dependencies
+description: 'Install script dependencies: snowsql + jq'
+
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq curl unzip gettext-base
+    - name: Install SnowSQL
+      shell: bash
+      run: |
+        curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.3-linux_x86_64.bash
+        SNOWSQL_DEST=/home/runner/.local/bin SNOWSQL_LOGIN_SHELL=~/.bashrc bash snowsql-1.3.3-linux_x86_64.bash

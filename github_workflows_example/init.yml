@@ -1,0 +1,22 @@
+---
+name: init
+
+on:
+  workflow_dispatch:
+
+jobs:
+  init:
+    runs-on: [atmos-aws-arc-runner-set]
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Sanofi-GitHub/snowflake-automate/install-deps@main
+      - uses: Sanofi-GitHub/snowflake-automate/init@main
+        with:
+          snowflake_account: ${{ vars.SNOWFLAKE_ACCOUNT }}
+          snowflake_database: ${{ vars.SNOWFLAKE_DB }}
+          snowflake_user: ${{ vars.SNOWFLAKE_USER }}
+          snowflake_password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          snowflake_role: ${{ vars.SNOWFLAKE_ROLE }}
+          snowflake_warehouse: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+
