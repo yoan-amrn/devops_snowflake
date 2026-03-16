@@ -29,9 +29,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Init
+    - name: make deploy.sh executable
       shell: bash
       run: chmod +x ${{GITHUB_ACTION_PATH}}/../lib/deploy.sh
+    - name: Init
+      shell: bash
       run: ${GITHUB_ACTION_PATH}/../lib/deploy.sh init -d ${{ inputs.scripts_root_dir }} -e ${{ inputs.target_env }}
       env:
         SNOWSQL_ACCOUNT: ${{ inputs.snowflake_account }}
