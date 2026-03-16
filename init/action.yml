@@ -31,6 +31,7 @@ runs:
   steps:
     - name: Init
       shell: bash
+      run: chmod +x ${{GITHUB_ACTION_PATH}}/../lib/deploy.sh
       run: ${GITHUB_ACTION_PATH}/../lib/deploy.sh init -d ${{ inputs.scripts_root_dir }} -e ${{ inputs.target_env }}
       env:
         SNOWSQL_ACCOUNT: ${{ inputs.snowflake_account }}
