@@ -32,6 +32,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: make deploy.sh executable
+      shell: bash
+      run: chmod +x ${GITHUB_ACTION_PATH}/../lib/deploy.sh
     - name: Prepare the SQL scripts
       shell: bash
       run: ${GITHUB_ACTION_PATH}/../lib/deploy.sh prepare -d ${{ inputs.scripts_root_dir }} -e ${{ inputs.target_env }}

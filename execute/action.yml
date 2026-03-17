@@ -34,6 +34,9 @@ runs:
       with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.artifact_name }}
+    - name: make deploy.sh executable
+      shell: bash
+      run: chmod +x ${GITHUB_ACTION_PATH}/../lib/deploy.sh
     - name: Run the prepared SQL scripts
       shell: bash
       run: ${{ github.action_path }}/../lib/deploy.sh execute -y -e ${{ inputs.target_env }}
